@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-HK">
+<html lang="zh-HK" id="htmlRoot">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -140,6 +140,16 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .flip-tooltip.show{display:block}
 .ft-row{display:flex;justify-content:space-between;gap:20px;padding:2px 0;font-size:10px}
 .ft-row .fk{color:#888}.ft-row .fv{font-weight:600}
+
+/* ── Language switcher ── */
+#langSwitchBar{margin-top:.5rem}
+
+/* ── Disclaimer box ── */
+.disclaimer-box{background:#fff;border-radius:12px;border:1px solid #e8e8e4;padding:1.25rem 1.5rem;margin-top:1rem;margin-bottom:.5rem}
+.disc-title{font-size:13px;font-weight:700;color:#111;margin-bottom:1rem;padding-bottom:.5rem;border-bottom:2px solid #1D9E75}
+.disc-section{font-size:9.5px;color:#555;line-height:1.7;margin-bottom:.9rem;padding:.6rem .8rem;background:#f8f8f4;border-radius:6px;border-left:2px solid #ddd}
+.disc-sub{font-size:10px;font-weight:700;color:#333;margin-bottom:3px}
+
 </style>
 </head>
 <body>
@@ -311,14 +321,81 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 </div>
 <div class="chart-wrap"><canvas id="wChart"></canvas></div>
 
-<div class="footer">
-  ★ <strong>首次買家PTT豁免</strong>：物業≤$835,000最多慳$8,000（BC Gov 2024年4月起）。<strong>新樓PTT豁免</strong>：物業≤$1,100,000最多慳$20,000。<br>
-  ★ <strong>聯邦GST</strong>：新樓繳5%。首次買家新政（2026年3月29日起）：物業≤$1,000,000全免最多慳$50,000。<br>
-  ★ 方案B每月投入 = max(0, 按揭月供當量 + 物業雜費/12 − 當年租金 − 債務) + 額外投入。逐年按租金增長計算，數學已驗證。<br>
-  ★ 按揭採加拿大標準半年複利（semi-annual compounding）。BC RTB租金上限：2026年2.3%。<br>
-  ★ <strong>本工具僅供教育及參考用途，並非財務建議。建議諮詢持牌財務顧問及按揭經紀。</strong>
+<div id="langSwitchBar" style="text-align:right;margin-bottom:.5rem">
+  <button onclick="switchLang()" id="langBtn" style="padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid #1D9E75;background:#fff;color:#1D9E75;transition:all .15s">🌐 English</button>
 </div>
-<div class="watermark">由 <strong>@_marcocheng</strong> 製作 · 溫哥華地產頻道 · 2026年3月</div>
+
+<!-- BILINGUAL DISCLAIMER -->
+<div class="disclaimer-box" id="disclaimer">
+  <!-- ZH -->
+  <div id="disc-zh">
+    <div class="disc-title">免責聲明及法律聲明</div>
+    <div class="disc-section">
+      <div class="disc-sub">1. 非財務建議</div>
+      本工具僅供教育及一般資訊用途，並不構成《財務顧問服務條例》（BC Financial Services Authority，BCFSA）下的財務建議、投資建議、按揭建議或任何形式的專業意見。使用者在作出任何購買、出售、投資或按揭決定前，應諮詢持牌財務顧問、持牌按揭經紀或其他相關持牌專業人士。
+    </div>
+    <div class="disc-section">
+      <div class="disc-sub">2. BCFSA 合規聲明</div>
+      本工具由非持牌財務顧問製作。根據卑詩省 BCFSA 指引，本工具的計算結果及數據展示不應被視為持牌人士提供的財務建議。任何與本工具相關的地產交易建議，均由持牌地產經紀根據《地產服務法》（Real Estate Services Act）提供。
+    </div>
+    <div class="disc-section">
+      <div class="disc-sub">3. 資料準確性聲明</div>
+      所有利率、稅務政策（PTT、GST、CMHC保費）、租金數據及市場預測均來自公開資料來源，包括 WOWA.ca、BC省政府官網、加拿大稅務局（CRA）及 Zumper，並以2026年3月為基準。以上數據可能隨時更改，本工具不保證數據的即時性、準確性或完整性。使用者應自行核實所有數據。
+    </div>
+    <div class="disc-section">
+      <div class="disc-sub">4. 投資風險警告</div>
+      過往投資回報（包括股票、ETF歷史數據）不代表未來表現。物業市場及股票市場均存在風險，包括但不限於資本損失、市場波動、利率變動及流動性風險。本工具所呈現的任何預測或估算均為假設性質，實際結果可能與預測有重大差異。
+    </div>
+    <div class="disc-section">
+      <div class="disc-sub">5. 私隱條例（PIPA/PIPEDA）</div>
+      本工具完全在使用者的瀏覽器本地運行，不收集、儲存、傳輸或處理任何個人資料。所有輸入數據僅在使用者裝置上作即時計算，關閉頁面後即消失。本工具符合《個人資料保護法》（BC PIPA）及《個人資料保護及電子文件法》（PIPEDA）的私隱原則，不設任何數據庫、帳號系統或追蹤機制。
+    </div>
+    <div class="disc-section">
+      <div class="disc-sub">6. 責任限制</div>
+      @_marcocheng 及本工具的製作者就使用者依賴本工具作出任何決定所引致的直接或間接損失、損害或法律責任概不負責。使用本工具即代表使用者確認已閱讀並同意本免責聲明。
+    </div>
+    <div class="disc-section" style="border-left-color:#1D9E75">
+      <div class="disc-sub" style="color:#1D9E75">數據來源</div>
+      WOWA.ca（利率）｜BC省政府（PTT/CMHC政策）｜CRA（GST）｜Zumper（租金）｜Stats Canada（CPI）｜Royal LePage（市場預測）｜BC RTB（租金上限）
+    </div>
+  </div>
+
+  <!-- EN -->
+  <div id="disc-en" style="display:none">
+    <div class="disc-title">Disclaimer & Legal Notice</div>
+    <div class="disc-section">
+      <div class="disc-sub">1. Not Financial Advice</div>
+      This tool is provided for educational and general informational purposes only. It does not constitute financial advice, investment advice, mortgage advice, or any form of professional advice regulated under the BC Financial Services Authority (BCFSA). Users should consult a licensed financial advisor, licensed mortgage broker, or other relevant licensed professionals before making any purchase, sale, investment, or mortgage decision.
+    </div>
+    <div class="disc-section">
+      <div class="disc-sub">2. BCFSA Compliance Statement</div>
+      This tool is created by a non-licensed financial advisor. In accordance with BCFSA guidelines, the calculations and data presented herein should not be construed as financial advice from a licensed person. Any real estate transaction advice related to this tool is provided by a licensed real estate professional under the Real Estate Services Act (BC).
+    </div>
+    <div class="disc-section">
+      <div class="disc-sub">3. Data Accuracy</div>
+      All interest rates, tax policies (PTT, GST, CMHC premiums), rental data, and market forecasts are sourced from publicly available information including WOWA.ca, BC Government, Canada Revenue Agency (CRA), and Zumper, current as of March 2026. This data is subject to change without notice. This tool makes no representation as to the timeliness, accuracy, or completeness of any information. Users should independently verify all data.
+    </div>
+    <div class="disc-section">
+      <div class="disc-sub">4. Investment Risk Warning</div>
+      Past investment returns (including historical stock and ETF data) are not indicative of future performance. Both real estate and stock markets carry risks including, but not limited to, capital loss, market volatility, interest rate changes, and liquidity risk. Any projections or estimates presented are hypothetical in nature and actual results may differ materially.
+    </div>
+    <div class="disc-section">
+      <div class="disc-sub">5. Privacy (PIPA/PIPEDA)</div>
+      This tool operates entirely within the user's browser. It does not collect, store, transmit, or process any personal information. All input data is used solely for real-time calculations on the user's device and is discarded upon closing the page. This tool complies with BC's Personal Information Protection Act (PIPA) and the federal Personal Information Protection and Electronic Documents Act (PIPEDA). No database, account system, or tracking mechanism is employed.
+    </div>
+    <div class="disc-section">
+      <div class="disc-sub">6. Limitation of Liability</div>
+      @_marcocheng and the creators of this tool shall not be liable for any direct or indirect loss, damage, or legal liability arising from any decision made in reliance on this tool. By using this tool, users acknowledge that they have read and agree to this disclaimer.
+    </div>
+    <div class="disc-section" style="border-left-color:#1D9E75">
+      <div class="disc-sub" style="color:#1D9E75">Data Sources</div>
+      WOWA.ca (rates) | BC Government (PTT/CMHC) | CRA (GST) | Zumper (rental) | Stats Canada (CPI) | Royal LePage (forecast) | BC RTB (rent caps)
+    </div>
+  </div>
+</div>
+
+<div class="watermark" id="watermark-zh">由 <strong>@_marcocheng</strong> 製作 · 溫哥華地產頻道 · 2026年3月</div>
+<div class="watermark" id="watermark-en" style="display:none">Created by <strong>@_marcocheng</strong> · Vancouver Real Estate Channel · March 2026</div>
 
 </div>
 
@@ -514,6 +591,154 @@ function checkIns(){document.getElementById('insNote').style.display=(parseFloat
 
 document.getElementById('etfInput').addEventListener('keydown',e=>{if(e.key==='Enter')lookupETF();});
 setRateType('fixed');setPF('biweekly');checkIns();update();
+
+// ── Bilingual language switcher ──
+const LANG_STRINGS = {
+  zh: {
+    h1: '買樓 vs 租樓+投資 vs 純投資 — 溫哥華財富對比計算器',
+    sub: '溫哥華/加拿大 2026年3月 · A綠 B黃 C紅 · WOWA.ca + BC Gov + CRA',
+    badge1: 'BoC 2.25% | Prime 4.45%',
+    badge2: '首次買家PTT豁免最高$8,000',
+    badge3: '新樓PTT豁免最高$20,000',
+    badge4: 'Zumper全市租金中位 $2,600/月',
+    badgeFlip: 'BC Flipping Tax 2025起 ▾',
+    topSlbl: '股票/ETF 查詢 ＆ 每月額外投入',
+    etfLabel: '股票/ETF 代碼（🇨🇦 加拿大 或 🇺🇸 美國 均支援）',
+    etfPlaceholder: 'VFV · XIU · XEQT · AAPL · SCHD · QQQ',
+    etfHint: '輸入代碼查歷史回報，自動套入年回報率。支援 TSX、NYSE、NASDAQ 上市',
+    extraLabel: '每月額外投入 (CAD) — 同時應用於方案B及方案C',
+    extraHint: 'B方案在租金節省之外額外投入；C方案在免租假設下額外投入（扣除債務後）。',
+    rateSlbl: '銀行 / 信用合作社利率（WOWA.ca + Vancity + Coast Capital 2026年3月）',
+    pfSlbl: '供款頻率 ＆ 按揭分析',
+    pfLabel: '供款頻率',
+    paramsSlbl: '物業及財務參數',
+    taxSlbl: 'BC/聯邦稅務優惠（自動計算節省金額）',
+    costsSlbl: '物業開支 ＆ 債務負擔',
+    tabLabels: ['3年後','5年後','10年後','20年後','30年後'],
+    cardALbl: '方案 A', cardAName: '買樓自住', cardASub: '淨資產（物業市值 − 剩餘按揭）',
+    cardBLbl: '方案 B', cardBName: '租樓 + 首期投資', cardBSub: '淨財富（投資組合 − 累計租金）',
+    cardCLbl: '方案 C', cardCName: '純投資（首期全投）', cardCSub: '投資組合（假設免租）',
+    legendA: '方案A 買樓（綠）', legendB: '方案B 租樓+投資（黃）', legendC: '方案C 純投資（紅）',
+    langBtn: '🌐 English',
+  },
+  en: {
+    h1: 'Buy vs Rent+Invest vs Pure Invest — Vancouver Wealth Comparison',
+    sub: 'Vancouver/Canada March 2026 · A=Green B=Yellow C=Red · WOWA.ca + BC Gov + CRA',
+    badge1: 'BoC 2.25% | Prime 4.45%',
+    badge2: 'First-Time Buyer PTT Exemption up to $8,000',
+    badge3: 'New Build PTT Exemption up to $20,000',
+    badge4: 'Zumper City-Wide Median Rent $2,600/mo',
+    badgeFlip: 'BC Flipping Tax since 2025 ▾',
+    topSlbl: 'Stock/ETF Lookup & Monthly Extra Investment',
+    etfLabel: 'Stock/ETF Ticker (🇨🇦 Canada or 🇺🇸 US supported)',
+    etfPlaceholder: 'VFV · XIU · XEQT · AAPL · SCHD · QQQ',
+    etfHint: 'Enter ticker to look up historical returns and auto-fill the rate. TSX, NYSE, NASDAQ supported.',
+    extraLabel: 'Monthly Extra Investment (CAD) — Applied to Plans B & C',
+    extraHint: 'Plan B: additional investment beyond mortgage savings. Plan C: additional investment under rent-free assumption (after debt payments).',
+    rateSlbl: 'Bank / Credit Union Rates (WOWA.ca + Vancity + Coast Capital, March 2026)',
+    pfSlbl: 'Payment Frequency & Mortgage Analysis',
+    pfLabel: 'Payment Frequency',
+    paramsSlbl: 'Property & Financial Parameters',
+    taxSlbl: 'BC/Federal Tax Incentives (Auto-calculated savings)',
+    costsSlbl: 'Property Expenses & Debt Obligations',
+    tabLabels: ['3 Years','5 Years','10 Years','20 Years','30 Years'],
+    cardALbl: 'Plan A', cardAName: 'Buy & Own', cardASub: 'Net Worth (Property Value − Remaining Mortgage)',
+    cardBLbl: 'Plan B', cardBName: 'Rent + Invest Down Payment', cardBSub: 'Net Wealth (Portfolio − Cumulative Rent)',
+    cardCLbl: 'Plan C', cardCName: 'Pure Investment (Full Down Payment)', cardCSub: 'Portfolio (Rent-free assumption)',
+    legendA: 'Plan A: Buy (Green)', legendB: 'Plan B: Rent+Invest (Yellow)', legendC: 'Plan C: Pure Invest (Red)',
+    langBtn: '🌐 中文',
+  }
+};
+
+let currentLang = 'zh';
+
+function switchLang() {
+  currentLang = currentLang === 'zh' ? 'en' : 'zh';
+  applyLang(currentLang);
+}
+
+function applyLang(lang) {
+  const s = LANG_STRINGS[lang];
+  const htmlRoot = document.getElementById('htmlRoot');
+  if(htmlRoot) htmlRoot.lang = lang === 'zh' ? 'zh-HK' : 'en';
+
+  // Header
+  const h1 = document.querySelector('h1');
+  if(h1) h1.textContent = s.h1;
+  const sub = document.querySelector('.header p');
+  if(sub) sub.textContent = s.sub;
+
+  // Lang button
+  const btn = document.getElementById('langBtn');
+  if(btn) btn.textContent = s.langBtn;
+
+  // Disclaimer visibility
+  document.getElementById('disc-zh').style.display = lang === 'zh' ? '' : 'none';
+  document.getElementById('disc-en').style.display = lang === 'en' ? '' : 'none';
+  document.getElementById('watermark-zh').style.display = lang === 'zh' ? '' : 'none';
+  document.getElementById('watermark-en').style.display = lang === 'en' ? '' : 'none';
+
+  // Section labels (slbl)
+  const slbls = document.querySelectorAll('.slbl');
+  const slblMap = [s.topSlbl, s.rateSlbl, s.pfSlbl, s.paramsSlbl, s.taxSlbl, s.costsSlbl];
+  slbls.forEach((el, i) => { if(slblMap[i]) el.textContent = slblMap[i]; });
+
+  // Result cards
+  setTxt('cardA .rc-lbl', s.cardALbl);
+  setTxt('cardA .rc-name', s.cardAName);
+  setTxt('cardA .rc-sub', s.cardASub);
+  setTxt('cardB .rc-lbl', s.cardBLbl);
+  setTxt('cardB .rc-name', s.cardBName);
+  setTxt('cardB .rc-sub', s.cardBSub);
+  setTxt('cardC .rc-lbl', s.cardCLbl);
+  setTxt('cardC .rc-name', s.cardCName);
+  setTxt('cardC .rc-sub', s.cardCSub);
+
+  // Legend
+  const lds = document.querySelectorAll('.legend span');
+  if(lds[0]) lds[0].lastChild.textContent = ' '+s.legendA;
+  if(lds[1]) lds[1].lastChild.textContent = ' '+s.legendB;
+  if(lds[2]) lds[2].lastChild.textContent = ' '+s.legendC;
+
+  // Year tabs
+  const tabIds = ['tab3','tab5','tab10','tab20','tab30'];
+  tabIds.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if(el) el.textContent = s.tabLabels[i];
+  });
+
+  // ETF section labels
+  setAttr('etfInput', 'placeholder', s.etfPlaceholder);
+  const etfLabel = document.querySelector('.top-row .pc:first-child label');
+  if(etfLabel) etfLabel.textContent = s.etfLabel;
+  const etfHint = document.querySelector('.top-row .pc:first-child .hint');
+  if(etfHint) etfHint.textContent = s.etfHint;
+  const extraLabel = document.querySelector('.top-row .pc:last-child label');
+  if(extraLabel) extraLabel.textContent = s.extraLabel;
+  const extraHint = document.querySelector('.top-row .pc:last-child .hint');
+  if(extraHint) extraHint.textContent = s.extraHint;
+
+  // PF label
+  const pfLabel = document.querySelector('.pf-mort-grid .pc label');
+  if(pfLabel) pfLabel.textContent = s.pfLabel;
+
+  // Mortgage analysis title
+  const mpTitle = document.querySelector('.mp-title');
+  if(mpTitle) mpTitle.textContent = lang === 'zh' ? '📊 按揭供款分析' : '📊 Mortgage Payment Analysis';
+
+  // Re-run update to refresh result card detail texts in correct language
+  // (the numbers stay correct, just the labels may stay in one language for now)
+}
+
+function setTxt(sel, txt) {
+  const el = document.querySelector('#'+sel.split(' ')[0]+' .'+sel.split(' ')[1]);
+  if(el) el.textContent = txt;
+}
+function setAttr(id, attr, val) {
+  const el = document.getElementById(id);
+  if(el) el[attr] = val;
+}
+
 </script>
 </body>
 </html>
