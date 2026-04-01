@@ -400,8 +400,6 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 </div>
 
 <script>
-var currentLang = 'zh'; // Global — declared first to avoid TDZ
-
 let curY=3,wChart=null,rateType='fixed',curTerm='5',curPF='biweekly',isHR=false;
 let cbFTHB=false,cbNewBuild=false,cbGST=false;
 
@@ -932,6 +930,7 @@ const LANG = {
   }
 };
 
+let currentLang = 'zh';
 
 function switchLang() {
   currentLang = currentLang === 'zh' ? 'en' : 'zh';
