@@ -1,1 +1,433 @@
 
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>買樓 vs 租樓+投資 vs 純投資 — 溫哥華財富對比計算器</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a1a;min-height:100vh}
+.page{max-width:980px;margin:0 auto;padding:1.5rem 1rem 3rem}
+.header{background:#fff;border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1rem;border:1px solid #e8e8e4}
+.header h1{font-size:21.0px;font-weight:600;color:#111;margin-bottom:3px}
+.header p{font-size:14.0px;color:#666;margin-bottom:10px}
+.badge-row{display:flex;flex-wrap:wrap;gap:5px}
+.badge{font-size:12.0px;padding:3px 9px;border-radius:20px;background:#e8f4fd;color:#1a5f9e;font-weight:500}
+.badge.warn{background:#fef3cd;color:#856404;cursor:pointer;position:relative}
+.section{background:#fff;border-radius:12px;padding:1.1rem 1.25rem;margin-bottom:.9rem;border:1px solid #e8e8e4}
+.slbl{font-size:12.0px;font-weight:600;color:#888;letter-spacing:.07em;text-transform:uppercase;margin-bottom:9px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:600px){.g2{grid-template-columns:1fr}}
+.pc{background:#f8f8f4;border-radius:8px;padding:10px 12px;border:1px solid #eeeeea}
+.pc label{display:block;font-size:13.0px;color:#666;margin-bottom:5px}
+.hint{font-size:11.0px;color:#999;margin-top:3px;line-height:1.5}
+.prow{display:flex;align-items:center;gap:8px;margin-bottom:3px}
+.prow input[type=range]{flex:1;min-width:0;accent-color:#1D9E75;height:4px}
+.pval{font-size:14.0px;font-weight:600;color:#111;min-width:70px;text-align:right}
+input[type=number],input[type=text],select{width:100%;border:1px solid #ddd;border-radius:6px;padding:5px 8px;font-size:14.0px;color:#111;background:#fff;outline:none;-webkit-appearance:none;-moz-appearance:textfield}
+input[type=number]:focus,input[type=text]:focus,select:focus{border-color:#1D9E75;box-shadow:0 0 0 2px rgba(29,158,117,0.1)}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
+.rate-box{border-radius:10px;padding:1rem 1.1rem;border:2px solid #1D9E75;background:rgba(29,158,117,0.03);margin-bottom:.9rem}
+.rate-box.var{border-color:#BA7517;background:rgba(186,117,23,0.03)}
+.rt-toggle{display:flex;border-radius:8px;overflow:hidden;border:1px solid #ddd;margin-bottom:10px;width:fit-content}
+.rt-btn{padding:6px 18px;font-size:13.0px;font-weight:500;cursor:pointer;background:transparent;border:none;color:#666}
+.rt-btn.on-fixed{background:#1D9E75;color:#fff}
+.rt-btn.on-variable{background:#BA7517;color:#fff}
+.term-row{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px}
+.term-btn{padding:4px 11px;font-size:12.0px;border-radius:5px;border:1px solid #ddd;cursor:pointer;background:transparent;color:#666}
+.term-btn.on{background:#111;color:#fff;border-color:#111}
+.term-note{font-size:11.0px;color:#999;margin-bottom:8px}
+.rate-inline{display:grid;grid-template-columns:1fr 200px 90px;gap:10px;align-items:end}
+@media(max-width:580px){.rate-inline{grid-template-columns:1fr;gap:8px}}
+.rate-inline label{font-size:13.0px;color:#666;display:block;margin-bottom:4px}
+.rate-inset{font-size:11.0px;color:#f59e0b;margin-top:3px;display:none;font-weight:500}
+.top-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:.9rem}
+@media(max-width:520px){.top-row{grid-template-columns:1fr}}
+.lookup-row{display:flex;gap:6px;align-items:flex-start;margin-top:4px}
+.lbtn{padding:5px 11px;font-size:13.0px;border:1px solid #ddd;border-radius:6px;background:#f8f8f4;color:#333;cursor:pointer;white-space:nowrap;font-weight:500}
+.lbtn:hover{background:#eee}
+.status{font-size:12.0px;margin-top:4px;min-height:14px;line-height:1.4}
+.status.ok{color:#1a6b3a}.status.err{color:#b91c1c}.status.info{color:#1a5f9e}.status.loading{color:#888}
+.pf-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:5px}
+@media(max-width:480px){.pf-grid{grid-template-columns:repeat(2,1fr)}}
+.pf-btn{padding:7px 0;font-size:12.0px;text-align:center;border-radius:6px;border:2px solid #eee;cursor:pointer;background:#f8f8f4;color:#666;line-height:1.4}
+.pf-btn.on{border-color:#BA7517;background:#fef3e0;color:#7a4b00;font-weight:600}
+.pf-note{font-size:12.0px;margin-top:8px;padding:7px 11px;border-radius:6px;display:none;line-height:1.5}
+.pf-note.save{border-left:3px solid #1D9E75;background:#f0fdf4;color:#166534}
+.pf-note.neutral{border-left:3px solid #ddd;background:#f8f8f4;color:#666}
+.pf-mort-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:.9rem}
+@media(max-width:600px){.pf-mort-grid{grid-template-columns:1fr}}
+.mort-panel{background:#fff;border:1px solid #e8e8e4;border-radius:10px;padding:10px 13px}
+.mort-panel .mp-title{font-size:13.0px;font-weight:600;color:#111;margin-bottom:8px}
+.mp-row{display:flex;justify-content:space-between;font-size:12.0px;padding:3px 0;border-bottom:1px solid #f0f0ec}
+.mp-row:last-of-type{border-bottom:none}
+.mp-row .mk{color:#888;flex:1}.mp-row .mv{font-weight:600;color:#222;text-align:right;margin-left:8px}
+.mp-divider{height:1px;background:#eee;margin:5px 0}
+.mp-total .mk{font-weight:600;color:#111}.mp-total .mv{color:#1D9E75}
+.mp-interest .mv{color:#BA7517}
+.int-note{font-size:11.0px;color:#999;margin-top:6px;padding:5px 8px;background:#fffbeb;border-radius:4px;border-left:2px solid #BA7517;line-height:1.55}
+.cb-group{display:flex;flex-direction:column;gap:7px}
+.cb-row{display:flex;align-items:flex-start;gap:9px;padding:9px 11px;background:#f8f8f4;border-radius:8px;cursor:pointer;border:1px solid transparent}
+.cb-row.active{border-color:#1D9E75;background:rgba(29,158,117,0.04)}
+.cb-row input[type=checkbox]{width:15px;height:15px;margin-top:1px;flex-shrink:0;cursor:pointer;accent-color:#1D9E75}
+.cb-label{font-size:13.0px;color:#111;font-weight:600;line-height:1.4}
+.cb-desc{font-size:11.5px;color:#666;margin-top:2px;line-height:1.5}
+.cb-saving{font-size:12.0px;font-weight:600;color:#1D9E75;margin-top:3px}
+.tax-savings{background:#f0fdf4;border-radius:8px;padding:8px 12px;margin-top:9px;font-size:12.0px;color:#166534;border:1px solid #bbf7d0;display:none}
+.tabs{display:flex;gap:5px;margin-bottom:1rem;flex-wrap:wrap}
+.yr-btn{padding:6px 16px;border-radius:20px;font-size:13.0px;font-weight:500;cursor:pointer;border:2px solid #ddd;background:#f8f8f4;color:#666}
+.yr-btn.on{background:#1D9E75;color:#fff;border-color:#1D9E75}
+.rg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:1rem}
+@media(max-width:620px){.rg{grid-template-columns:1fr}}
+.rc{border-radius:10px;border:1px solid #e8e8e4;padding:14px;background:#fff}
+.rc.ra{border-left:4px solid #1D9E75}
+.rc.rb{border-left:4px solid #BA7517}
+.rc.rc2{border-left:4px solid #E24B4A}
+.rc.ra.winner{background:#f0fdf4;border-color:#86efac}
+.rc.rb.winner{background:#fffbeb;border-color:#fcd34d}
+.rc.rc2.winner{background:#fff1f2;border-color:#fca5a5}
+.rc-lbl{font-size:12.0px;color:#888;font-weight:500}
+.rc-name{font-size:15.0px;font-weight:600;color:#111;margin-bottom:8px}
+.big-a{font-size:24.0px;font-weight:700;color:#1D9E75}
+.big-b{font-size:24.0px;font-weight:700;color:#BA7517}
+.big-c{font-size:24.0px;font-weight:700;color:#E24B4A}
+.rc.winner .big-a,.rc.winner .big-b,.rc.winner .big-c{font-size:26px}
+.rc-sub{font-size:11.5px;color:#888;margin-top:2px}
+.rc-det{margin-top:9px;border-top:1px solid #f0f0ec;padding-top:8px}
+.dr{display:flex;justify-content:space-between;font-size:12.0px;padding:2px 0}
+.dr .k{color:#888}.dr .v{font-weight:600;color:#222}
+.banner{border-radius:10px;padding:10px 14px;margin-bottom:1rem;display:flex;align-items:center;gap:10px;font-size:14.0px;font-weight:500}
+.ban-a{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}
+.ban-b{background:#fffbeb;color:#92400e;border:1px solid #fde68a}
+.ban-c{background:#fff1f2;color:#9f1239;border:1px solid #fecdd3}
+.bicon{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14.0px;flex-shrink:0;color:#fff}
+.bi-a{background:#1D9E75}.bi-b{background:#BA7517}.bi-c{background:#E24B4A}
+.flipnote{background:#fef3cd;border-radius:8px;padding:8px 12px;font-size:12.0px;color:#856404;margin-bottom:.9rem;display:none;font-weight:500}
+.insnote{background:#fff1f2;border-radius:6px;padding:7px 10px;font-size:12.0px;color:#9f1239;margin-top:5px;display:none;font-weight:500}
+.chart-section{background:#fff;border-radius:12px;padding:1.1rem 1.25rem;margin-bottom:.9rem;border:1px solid #e8e8e4}
+.legend{display:flex;gap:14px;margin-bottom:8px;font-size:12.0px;color:#666;flex-wrap:wrap}
+.legend span{display:flex;align-items:center;gap:5px}
+.ld{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+.chart-wrap{position:relative;width:100%;height:280px}
+.divider{height:1px;background:#f0f0ec;margin:.9rem 0}
+.badge-wrap{position:relative;display:inline-block}
+.flip-tooltip{display:none;position:absolute;z-index:999;background:#fff;border:1px solid #ddd;border-radius:10px;padding:12px 14px;font-size:13.0px;color:#333;line-height:1.7;max-width:290px;top:calc(100% + 6px);left:0;box-shadow:0 4px 16px rgba(0,0,0,0.12)}
+.flip-tooltip.show{display:block}
+.ft-row{display:flex;justify-content:space-between;gap:20px;padding:2px 0;font-size:12.0px}
+.ft-row .fk{color:#888}.ft-row .fv{font-weight:600}
+.footer{font-size:11.0px;color:#aaa;line-height:1.7;margin-top:1rem;padding:0 .5rem}
+.watermark{text-align:center;font-size:12.0px;color:#bbb;margin-top:.5rem}
+.watermark strong{color:#1D9E75}
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="header">
+  <h1>買樓 vs 租樓+投資 vs 純投資 — 溫哥華財富對比計算器</h1>
+  <div class="badge-row">
+    <span class="badge">BoC 2.25% | Prime 4.45%</span>
+    <span class="badge">首次買家PTT豁免最高$8,000</span>
+    <span class="badge">新樓PTT豁免最高$20,000</span>
+    <span class="badge-wrap">
+      <span class="badge warn" onclick="toggleFlip()" id="flipBadge">BC Flipping Tax 2025起 ▾</span>
+      <div class="flip-tooltip" id="flipTooltip">
+        <div style="font-weight:700;margin-bottom:7px;font-size:14.0px">BC Flipping Tax（住宅翻轉稅）</div>
+        <div class="ft-row"><span class="fk">持有 &lt;365日</span><span class="fv" style="color:#b91c1c">純利 20%</span></div>
+        <div class="ft-row"><span class="fk">持有 500日</span><span class="fv">純利 12.87%</span></div>
+        <div class="ft-row"><span class="fk">持有 600日</span><span class="fv">純利 6.58%</span></div>
+        <div class="ft-row"><span class="fk">持有 &gt;730日（2年）</span><span class="fv" style="color:#166534">0%（豁免）</span></div>
+        <div style="font-size:11.0px;color:#888;margin-top:6px">長期自住業主豁免。2025年1月1日起生效。</div>
+      </div>
+    </span>
+  </div>
+</div>
+
+<!-- Top row: ETF + Extra invest -->
+<div class="section">
+  <div class="slbl">股票/ETF 查詢 ＆ 每月額外投入</div>
+  <div class="top-row">
+    <div class="pc">
+      <label>股票/ETF 代碼（🇨🇦 加拿大 或 🇺🇸 美國 均支援）</label>
+      <div class="lookup-row">
+        <input type="text" id="etfInput" placeholder="VFV · XIU · XEQT · AAPL · SCHD · SPY · QQQ" maxlength="10" style="flex:1;text-transform:uppercase">
+        <button class="lbtn" onclick="lookupETF()">查詢 ↗</button>
+      </div>
+      <div class="status" id="etfSt"></div>
+      <div class="hint">支援 TSX、NYSE、NASDAQ 上市股票及ETF。輸入代碼後按 Enter 或點查詢。</div>
+    </div>
+    <div class="pc">
+      <label>每月額外投入 (CAD) — 同時應用於方案B及方案C</label>
+      <div class="prow"><input type="range" id="extraInvest" min="0" max="5000" step="50" value="0" oninput="syncExtra()"><span class="pval" id="extraVal">$0/月</span></div>
+      <input type="number" id="extraType" min="0" max="20000" step="50" placeholder="例：500" oninput="syncExtraType()">
+      <div class="hint">B方案在租金節省之外額外投入；C方案在免租假設下額外投入（扣除債務後）。</div>
+    </div>
+  </div>
+</div>
+
+<!-- Rate -->
+<div class="rate-box" id="rateBox">
+  <div class="slbl" style="margin-bottom:8px">銀行 / 信用合作社利率</div>
+  <div class="rt-toggle">
+    <button class="rt-btn on-fixed" id="fixedBtn" onclick="setRateType('fixed')">固定利率 Fixed</button>
+    <button class="rt-btn" id="varBtn" onclick="setRateType('variable')">浮動利率 Variable</button>
+  </div>
+  <div style="margin-bottom:10px">
+    <div style="font-size:13.0px;color:#555;font-weight:500;margin-bottom:5px" id="termLabel">按揭年期（固定利率）</div>
+    <div class="term-row" id="termBtns"></div>
+    <div class="term-note" id="termNote"></div>
+  </div>
+  <div class="rate-inline">
+    <div><label id="bankLabel">選擇銀行/機構</label><select id="bankSel" onchange="applyBankRate()"></select><div class="rate-inset" id="hrn">⚠ 首期&lt;20%：High Ratio 專用利率</div></div>
+    <div><label>利率 %</label><div class="prow" style="margin-top:4px"><input type="range" id="mortRate" min="2" max="9" step="0.05" value="3.75" oninput="syncMortSlider()" style="flex:1"><span class="pval" id="mortRateVal" style="min-width:50px;font-size:15.0px">3.75%</span></div></div>
+    <div><label>手動輸入</label><input type="number" id="mortRateType" min="1" max="12" step="0.01" placeholder="例：4.09" oninput="syncMortType()" style="margin-top:4px"></div>
+  </div>
+  <div class="insnote" id="insNote">⚠ CMHC按揭保費（2.8%–4.0%）將計入按揭本金。High Ratio 利率通常較常規更低。</div>
+</div>
+
+<!-- PF + Mortgage breakdown -->
+<div class="section">
+  <div class="slbl">供款頻率 ＆ 按揭分析</div>
+  <div class="pf-mort-grid">
+    <div class="pc">
+      <label>供款頻率</label>
+      <div class="pf-grid">
+        <button class="pf-btn" id="pf_monthly" onclick="setPF('monthly')">每月<br><span style="font-size:11.0px">Monthly</span></button>
+        <button class="pf-btn" id="pf_semi" onclick="setPF('semi')">每半月<br><span style="font-size:11.0px">Semi-monthly</span></button>
+        <button class="pf-btn on" id="pf_biweekly" onclick="setPF('biweekly')">每兩週<br><span style="font-size:11.0px">Bi-weekly</span></button>
+        <button class="pf-btn" id="pf_weekly" onclick="setPF('weekly')">每週<br><span style="font-size:11.0px">Weekly</span></button>
+      </div>
+      <div class="pf-note" id="pfNote"></div>
+    </div>
+    <div class="mort-panel">
+      <div class="mp-title">📊 按揭供款分析</div>
+      <div class="mp-row"><span class="mk">每次供款金額</span><span class="mv" id="mb_pmt">—</span></div>
+      <div class="mp-row"><span class="mk">供款次數（全期）</span><span class="mv" id="mb_n">—</span></div>
+      <div class="mp-divider"></div>
+      <div class="mp-row"><span class="mk">首年利息佔比</span><span class="mv" id="mb_yr1">—</span></div>
+      <div class="mp-row"><span class="mk">第5年利息佔比</span><span class="mv" id="mb_yr5">—</span></div>
+      <div class="mp-row"><span class="mk">第10年利息佔比</span><span class="mv" id="mb_yr10">—</span></div>
+      <div class="mp-divider"></div>
+      <div class="mp-row mp-total"><span class="mk">總供款（全期）</span><span class="mv" id="mb_tot">—</span></div>
+      <div class="mp-row"><span class="mk">　本金</span><span class="mv" id="mb_prin">—</span></div>
+      <div class="mp-row mp-interest"><span class="mk">　利息</span><span class="mv" id="mb_int">—</span></div>
+      <div class="int-note" id="mb_note">計算中...</div>
+    </div>
+  </div>
+</div>
+
+<!-- Main Params -->
+<div class="section">
+  <div class="slbl">物業及財務參數</div>
+  <div class="g2">
+    <div class="pc"><label>物業購入價 (CAD)</label><div class="prow"><input type="range" id="propPrice" min="400000" max="2500000" step="25000" value="1100000" oninput="syncPropPrice()"><span class="pval" id="propPriceVal">$1,100,000</span></div><input type="number" id="propPriceType" min="400000" max="2500000" step="1000" placeholder="400,000–2,500,000" oninput="syncPropPriceType()"></div>
+    <div class="pc"><label>首期比例（&lt;20%自動計CMHC保險）</label><div class="prow"><input type="range" id="downPct" min="5" max="40" step="1" value="20" oninput="syncDown()"><span class="pval" id="downPctVal">20%</span></div><input type="number" id="downPctType" min="5" max="40" step="1" placeholder="5–40" oninput="syncDownType()"></div>
+    <div class="pc"><label>按揭年期（攤還年數）</label><div class="prow"><input type="range" id="amort" min="15" max="30" step="1" value="25" oninput="syncAmort()"><span class="pval" id="amortVal">25年</span></div><input type="number" id="amortType" min="15" max="30" step="1" placeholder="15–30" oninput="syncAmortType()"></div>
+    <div class="pc"><label>每年物業增值率 % <span style="font-size:11.0px;color:#aaa">2024：−2.8%　2025：−4.5%　RLP預測2026：+4%</span></label><div class="prow"><input type="range" id="propGrowth" min="-5" max="12" step="0.5" value="4" oninput="syncPG()"><span class="pval" id="propGrowthVal">4.0%</span></div><input type="number" id="propGrowthType" min="-10" max="20" step="0.1" placeholder="例：4.0" oninput="syncPGType()"></div>
+    <div class="pc"><label>現時月租 (CAD)</label><div class="prow"><input type="range" id="rent" min="1000" max="6000" step="50" value="2600" oninput="syncRent()"><span class="pval" id="rentVal">$2,600</span></div><input type="number" id="rentType" min="500" max="10000" step="50" placeholder="例：2600" oninput="syncRentType()"><div class="hint">Zumper <span class="cur-ym"></span>：全市 $2,600 | Downtown $2,895 | 北溫 $2,925 | West End $2,475</div></div>
+    <div class="pc"><label>股票/ETF 年回報率 % <span id="etfBadge" style="display:none;font-size:11.0px;padding:1px 5px;border-radius:3px;background:#d1fae5;color:#065f46;margin-left:3px"></span></label><div class="prow"><input type="range" id="stockReturn" min="3" max="18" step="0.5" value="11" oninput="syncSR()"><span class="pval" id="stockReturnVal">11.0%</span></div><input type="number" id="stockReturnType" min="1" max="25" step="0.1" placeholder="例：11.0" oninput="syncSRType()"><div class="hint">預設11%＝VFV/XEQT 5年中位。可用上方查詢框搜尋任何股票/ETF。</div></div>
+    <div class="pc"><label>每年租金增長率 % <span style="font-size:11.0px;color:#aaa">BC上限：2024年3.5%　2025年3.0%　2026年2.3%</span></label><div class="prow"><input type="range" id="rentGrowth" min="0" max="8" step="0.5" value="3" oninput="syncRG()"><span class="pval" id="rentGrowthVal">3.0%</span></div><input type="number" id="rentGrowthType" min="0" max="15" step="0.1" placeholder="例：3.0" oninput="syncRGType()"></div>
+    <div class="pc"><label>每年通脹率 % <span style="font-size:11.0px;color:#aaa">2023年3.9%　2024年2.4%　2025年2.1%</span></label><div class="prow"><input type="range" id="inflation" min="0.5" max="6" step="0.5" value="2" oninput="syncInfl()"><span class="pval" id="inflationVal">2.0%</span></div><input type="number" id="inflationType" min="0" max="10" step="0.1" placeholder="例：2.0" oninput="syncInflType()"><div class="hint">Stats Canada CPI。2026年2月最新：1.8%</div></div>
+  </div>
+</div>
+
+<!-- Tax -->
+<div class="section">
+  <div class="slbl">BC/聯邦稅務優惠（自動計算節省金額）</div>
+  <div class="cb-group">
+    <label class="cb-row" id="cbRow1"><input type="checkbox" id="cb_fthb" onchange="toggleCB(1)"><div><div class="cb-label">首次買家（First Time Home Buyer）— BC PTT 豁免</div><div class="cb-desc">物業 ≤$835,000：首$500,000 PTT全免，最多慳 $8,000。$835,000–$860,000：部分豁免。>$860,000：無豁免。</div><div class="cb-saving" id="cb1saving"></div></div></label>
+    <label class="cb-row" id="cbRow2"><input type="checkbox" id="cb_newbuild" onchange="toggleCB(2)"><div><div class="cb-label">購買新樓/Presale — BC 新樓 PTT 豁免</div><div class="cb-desc">物業 ≤$1,100,000：全面豁免PTT（2024年4月起），最多慳 $20,000。可與首置疊加。須自住，92日內入住，住滿1年。</div><div class="cb-saving" id="cb2saving"></div></div></label>
+    <label class="cb-row" id="cbRow3"><input type="checkbox" id="cb_gst" onchange="toggleCB(3)"><div><div class="cb-label">購買新樓/Presale — 聯邦 GST 5% 應繳</div><div class="cb-desc">首次買家新政（2026年3月29日起）：物業≤$1,000,000全免，最多慳$50,000。一般買家≤$450,000最多退$6,300。</div><div class="cb-saving" id="cb3saving"></div></div></label>
+  </div>
+  <div class="tax-savings" id="taxSavingBanner"></div>
+</div>
+
+<!-- Costs -->
+<div class="section">
+  <div class="slbl">物業開支 ＆ 債務負擔</div>
+  <div class="g2">
+    <div class="pc"><label>每年物業稅 (CAD)</label><div class="prow"><input type="range" id="propTax" min="0" max="20000" step="200" value="0" oninput="syncPT()"><span class="pval" id="propTaxVal">自動按0.5%</span></div><input type="number" id="propTaxType" min="0" max="50000" step="100" placeholder="0=自動按0.5%" oninput="syncPTType()"></div>
+    <div class="pc"><label>每月管理費 Strata Fee (CAD)</label><div class="prow"><input type="range" id="strata" min="0" max="2000" step="25" value="0" oninput="syncStr()"><span class="pval" id="strataVal">不適用</span></div><input type="number" id="strataType" min="0" max="3000" step="25" placeholder="獨立屋=0，公寓=300–800" oninput="syncStrType()"></div>
+    <div class="pc"><label>車貸月供 (CAD) <span style="font-size:11.0px;color:#aaa">— 影響三個方案</span></label><div class="prow"><input type="range" id="carDebt" min="0" max="3000" step="50" value="0" oninput="syncCD()"><span class="pval" id="carDebtVal">無</span></div><input type="number" id="carDebtType" min="0" max="5000" step="50" placeholder="例：500" oninput="syncCDType()"></div>
+    <div class="pc"><label>信用卡/其他債務月供 (CAD) <span style="font-size:11.0px;color:#aaa">— 影響三個方案</span></label><div class="prow"><input type="range" id="ccDebt" min="0" max="3000" step="50" value="0" oninput="syncCC()"><span class="pval" id="ccDebtVal">無</span></div><input type="number" id="ccDebtType" min="0" max="5000" step="50" placeholder="例：300" oninput="syncCCType()"></div>
+  </div>
+</div>
+
+<div class="divider"></div>
+<div class="tabs">
+  <button class="yr-btn on" id="tab3" onclick="setYear(3)">3年後</button>
+  <button class="yr-btn" id="tab5" onclick="setYear(5)">5年後</button>
+  <button class="yr-btn" id="tab10" onclick="setYear(10)">10年後</button>
+  <button class="yr-btn" id="tab20" onclick="setYear(20)">20年後</button>
+  <button class="yr-btn" id="tab30" onclick="setYear(30)">30年後</button>
+</div>
+<div class="flipnote" id="flipNote"></div>
+<div class="banner ban-a" id="winnerBanner"><div class="bicon bi-a" id="bicon">★</div><div id="winnerText"></div></div>
+<div class="rg">
+  <div class="rc ra" id="cardA"><div class="rc-lbl">方案 A</div><div class="rc-name">買樓自住</div><div class="big-a" id="buyW">-</div><div class="rc-sub">淨資產（物業市值 − 剩餘按揭）</div><div class="rc-det" id="buyDet"></div></div>
+  <div class="rc rb" id="cardB"><div class="rc-lbl">方案 B</div><div class="rc-name">租樓 + 首期投資</div><div class="big-b" id="rntW">-</div><div class="rc-sub">淨財富（投資組合 − 累計租金）</div><div class="rc-det" id="rntDet"></div></div>
+  <div class="rc rc2" id="cardC"><div class="rc-lbl">方案 C</div><div class="rc-name">純投資（首期全投）</div><div class="big-c" id="invW">-</div><div class="rc-sub">投資組合（假設免租）</div><div class="rc-det" id="invDet"></div></div>
+</div>
+
+<div class="chart-section">
+  <div class="legend">
+    <span><span class="ld" style="background:#1D9E75"></span>方案A 買樓（綠）</span>
+    <span><span class="ld" style="background:#BA7517"></span>方案B 租樓+投資（黃）</span>
+    <span><span class="ld" style="background:#E24B4A"></span>方案C 純投資（紅）</span>
+  </div>
+  <div class="chart-wrap"><canvas id="wChart"></canvas></div>
+</div>
+
+<div class="footer">
+  <strong style="font-size:12.0px;color:#888;display:block;margin-bottom:6px">重要法律聲明 — Legal Disclaimer</strong>
+
+  <strong>一般免責聲明 / General Disclaimer</strong><br>
+  本計算器（「本工具」）由 @msocal 提供，僅供一般參考及教育用途，並不構成、亦不應被視為財務建議、投資建議、按揭建議、法律建議、稅務建議或任何形式的專業意見。本工具的計算結果基於用戶自行輸入之假設，使用者須自行評估所有輸入數值的準確性及適用性。<br><br>
+
+  <strong>非持牌建議 / Not Licensed Advice</strong><br>
+  @msocal 並非持牌財務顧問、按揭經紀、律師、稅務顧問或任何受監管的金融服務提供者。本工具不受加拿大金融消費者局（FCAC）、卑詩省金融服務局（BCFSA）、加拿大投資行業監管組織（CIRO）、加拿大抵押貸款及住房公司（CMHC）或任何其他監管機構的監督。任何財務、按揭、法律或稅務決定，用戶應在作出前諮詢持牌且受監管的專業人士。<br><br>
+
+  <strong>BCFSA 合規聲明 / BCFSA Compliance Notice</strong><br>
+  根據《卑詩省房地產服務法》（Real Estate Services Act, RSBC 2004, c. 42），本工具並非由持牌房地產服務提供者以服務提供者身份提供，亦不構成房地產交易中的代理建議或代理行為。若閣下正考慮進行房地產交易，請聘用卑詩省房地產委員會（BC Real Estate Council）認可之持牌房地產經紀人。<br><br>
+
+  <strong>加拿大私隱專員辦公室合規聲明 / OPC / PIPEDA Compliance</strong><br>
+  本工具不收集、儲存、傳輸或處理任何個人識別資料（Personally Identifiable Information, PII）。所有計算均在用戶本地瀏覽器內即時進行，不涉及任何伺服器端數據存儲或第三方數據共享。本工具之設計符合《個人資訊保護與電子文件法》（PIPEDA, S.C. 2000, c. 5）及卑詩省《個人資訊保護法》（PIPA, SBC 2003, c. 63）之原則。如有任何私隱疑慮，可聯絡加拿大私隱專員辦公室（OPC）：www.priv.gc.ca。<br><br>
+
+  <strong>稅務聲明 / Tax Disclaimer</strong><br>
+  本工具所涉及之稅務資訊（包括但不限於物業轉讓稅PTT、商品及服務稅GST/HST、CMHC保費、BC翻轉稅）僅為一般性說明，不構成稅務建議。稅務法例常有變動，且個別情況可能有所不同。閣下應諮詢加拿大稅務局（CRA）認可之持牌稅務顧問或特許專業會計師（CPA）以獲取適用於閣下個人情況之稅務意見。<br><br>
+
+  <strong>數據準確性 / Data Accuracy</strong><br>
+  本工具中的利率資料來源包括 WOWA.ca、Vancity 及 Coast Capital 等公開資料，資料截至 <span class="cur-ym"></span>，僅供參考。實際利率可能因個人信用狀況、貸款金額、申請時間及金融機構政策而異。利率資料不構成正式利率報價，亦非金融機構的正式要約。<br><br>
+
+  <strong>投資警告 / Investment Risk Warning</strong><br>
+  股票、ETF 及其他投資產品的歷史回報不代表未來表現。所有投資均涉及風險，包括本金損失的風險。方案B（租樓+投資）及方案C（純投資）之計算結果基於假設回報率，實際市場表現可能存在重大差異。投資前請諮詢持牌投資顧問。<br><br>
+
+  <strong>責任限制 / Limitation of Liability</strong><br>
+  在法律允許之最大範圍內，@msocal 對因使用或依賴本工具而直接或間接引起的任何損失、損害、費用或開支（包括但不限於財務損失、機會損失或決策錯誤）概不負責。本工具按「現狀」提供，不附帶任何明示或暗示的保證，包括對適銷性、特定用途適用性或準確性的保證。<br><br>
+
+  <strong>適用法律 / Governing Law</strong><br>
+  本免責聲明受加拿大聯邦法律及卑詩省法律管轄，並按其詮釋。任何因本工具引起之爭議，以卑詩省法院為專屬管轄法院。<br><br>
+
+  <span style="color:#b91c1c;font-weight:600">⚠ 本工具不構成財務、法律、稅務或按揭建議。所有財務決定請諮詢持牌專業人士。本計算結果僅供參考，不得作為投資或購房決策之唯一依據。</span>
+</div>
+<div class="watermark">由 <strong>@msocal</strong> 製作</div>
+</div>
+
+<script>
+let curY=3,wChart=null,rateType='fixed',curTerm='5',curPF='biweekly',isHR=false;
+let cbFTHB=false,cbNewBuild=false,cbGST=false;
+
+const RATES={
+  fixed:{conventional:{'1':[{l:'CIBC 1年固定',r:4.74},{l:'RBC 1年固定',r:4.89},{l:'National Bank 1年固定',r:5.49},{l:'Vancity 1年固定',r:5.19},{l:'Coast Capital 1年固定',r:5.09}],'2':[{l:'CIBC 2年固定',r:4.29},{l:'RBC 2年固定',r:4.29},{l:'Vancity 2年固定',r:4.49},{l:'Coast Capital 2年固定',r:4.44},{l:'National Bank 2年固定',r:4.79}],'3':[{l:'Coast Capital 3年固定',r:4.29},{l:'Vancity 3年固定',r:4.34},{l:'CIBC 3年固定',r:4.39},{l:'RBC 3年固定',r:4.39},{l:'BMO 3年固定',r:4.39},{l:'National Bank 3年固定',r:4.39},{l:'TD 3年固定',r:4.44}],'4':[{l:'Coast Capital 4年固定',r:4.39},{l:'Vancity 4年固定',r:4.44},{l:'CIBC 4年固定',r:4.49},{l:'RBC 4年固定',r:4.49},{l:'National Bank 4年固定',r:4.49}],'5':[{l:'CIBC 5年固定',r:4.19},{l:'National Bank 5年固定',r:4.39},{l:'Vancity 5年固定',r:4.39},{l:'Coast Capital 5年固定',r:4.34},{l:'BMO 5年固定',r:4.49},{l:'TD 5年固定',r:4.59},{l:'RBC 5年固定',r:4.59},{l:'Broker常規最低',r:3.95}],'7':[{l:'Coast Capital 7年固定',r:4.99},{l:'Vancity 7年固定',r:5.04},{l:'RBC 7年固定',r:5.00},{l:'CIBC 7年固定',r:5.11},{l:'National Bank 7年固定',r:5.26}],'10':[{l:'Coast Capital 10年固定',r:6.49},{l:'Vancity 10年固定',r:6.54},{l:'CIBC 10年固定',r:6.79}]},highRatio:{'1':[{l:'CIBC HR 1年',r:4.64},{l:'Coast Capital HR 1年',r:4.74},{l:'RBC HR 1年',r:4.74},{l:'Vancity HR 1年',r:4.84}],'2':[{l:'CIBC HR 2年',r:4.09},{l:'RBC HR 2年',r:4.09},{l:'Coast Capital HR 2年',r:4.09},{l:'Vancity HR 2年',r:4.14}],'3':[{l:'Coast Capital HR 3年',r:4.09},{l:'CIBC HR 3年',r:4.09},{l:'RBC HR 3年',r:4.09},{l:'Vancity HR 3年',r:4.14},{l:'BMO HR 3年',r:4.14},{l:'TD HR 3年',r:4.19}],'4':[{l:'Coast Capital HR 4年',r:4.19},{l:'CIBC HR 4年',r:4.24},{l:'Vancity HR 4年',r:4.24},{l:'RBC HR 4年',r:4.24}],'5':[{l:'Broker HR最低',r:4.09},{l:'Coast Capital HR 5年',r:4.14},{l:'CIBC HR 5年',r:4.19},{l:'Vancity HR 5年',r:4.19},{l:'BMO HR 5年',r:4.24},{l:'RBC HR 5年',r:4.29},{l:'TD HR 5年',r:4.29}],'7':[{l:'Coast Capital HR 7年',r:4.74},{l:'Vancity HR 7年',r:4.79},{l:'RBC HR 7年',r:4.75},{l:'CIBC HR 7年',r:4.86}],'10':[{l:'Coast Capital HR 10年',r:6.24},{l:'Vancity HR 10年',r:6.29},{l:'CIBC HR 10年',r:6.64}]}},
+  variable:{conventional:{'3':[{l:'CIBC 3年浮動',r:4.05},{l:'Coast Capital 3年浮動',r:4.05},{l:'Vancity 3年浮動',r:4.10}],'5':[{l:'CIBC 5年浮動',r:3.95},{l:'RBC 5年浮動',r:3.95},{l:'Coast Capital 5年浮動',r:3.95},{l:'Vancity 5年浮動',r:4.00},{l:'BMO 5年浮動',r:4.10},{l:'TD 5年浮動',r:4.14},{l:'National Bank',r:4.45},{l:'Broker常規最低',r:3.85}]},highRatio:{'3':[{l:'Coast Capital HR 3年浮動',r:3.75},{l:'CIBC HR 3年浮動',r:3.80},{l:'Vancity HR 3年浮動',r:3.80}],'5':[{l:'Broker HR最低',r:3.35},{l:'Coast Capital HR 5年',r:3.65},{l:'CIBC HR 5年',r:3.70},{l:'Vancity HR 5年',r:3.70},{l:'BMO HR 5年',r:3.85},{l:'RBC HR 5年',r:3.95},{l:'TD HR 5年',r:4.10}]}}
+};
+const TERM_NOTES={fixed:{'1':'短期鎖定，預期利率下跌時適用','2':'平衡穩定與靈活性','3':'最熱門短中期，Big6平均4.40%','4':'較少銀行提供','5':'最多人選擇，Big6平均4.45%','7':'長期鎖定，利率略高','10':'最長年期，目前利率6.79%'},variable:{'3':'3年浮動，CIBC/Coast Capital均4.05%','5':'5年浮動Big6平均4.12%。TD用獨立Mortgage Prime 4.60%'}};
+
+const ETF_DATA={'VFV':{n:'Vanguard S&P 500 Index (CAD)',r5:13.8,r10:15.2,mkt:'🇨🇦 TSX'},'ZSP':{n:'BMO S&P 500 Index',r5:13.7,r10:15.1,mkt:'🇨🇦 TSX'},'XIU':{n:'iShares S&P/TSX 60',r5:10.2,r10:9.8,mkt:'🇨🇦 TSX'},'XIC':{n:'iShares S&P/TSX Composite',r5:10.1,r10:9.6,mkt:'🇨🇦 TSX'},'VCN':{n:'Vanguard FTSE Canada All Cap',r5:10.0,r10:9.5,mkt:'🇨🇦 TSX'},'ZCN':{n:'BMO S&P/TSX Capped Composite',r5:9.8,r10:9.3,mkt:'🇨🇦 TSX'},'XAW':{n:'iShares Core MSCI All Country',r5:12.1,r10:11.4,mkt:'🇨🇦 TSX'},'XEQT':{n:'iShares Core Equity Portfolio',r5:12.1,r10:null,mkt:'🇨🇦 TSX'},'VEQT':{n:'Vanguard All-Equity ETF Portfolio',r5:12.3,r10:null,mkt:'🇨🇦 TSX'},'VGRO':{n:'Vanguard Growth ETF Portfolio',r5:10.8,r10:null,mkt:'🇨🇦 TSX'},'XGRO':{n:'iShares Core Growth ETF Portfolio',r5:10.6,r10:null,mkt:'🇨🇦 TSX'},'HXT':{n:'Horizons S&P/TSX 60',r5:10.3,r10:10.0,mkt:'🇨🇦 TSX'},'ZEB':{n:'BMO Equal Weight Banks',r5:9.2,r10:8.8,mkt:'🇨🇦 TSX'},'CDZ':{n:'iShares Canadian Dividend',r5:8.9,r10:8.4,mkt:'🇨🇦 TSX'},'SPY':{n:'SPDR S&P 500 ETF Trust',r5:13.5,r10:14.9,mkt:'🇺🇸 NYSE'},'VOO':{n:'Vanguard S&P 500 ETF',r5:13.6,r10:15.0,mkt:'🇺🇸 NYSE'},'VTI':{n:'Vanguard Total Stock Market ETF',r5:12.8,r10:14.2,mkt:'🇺🇸 NYSE'},'QQQ':{n:'Invesco Nasdaq-100 ETF',r5:19.2,r10:18.5,mkt:'🇺🇸 NASDAQ'},'SCHD':{n:'Schwab US Dividend Equity ETF',r5:11.0,r10:13.4,mkt:'🇺🇸 NYSE'},'VYM':{n:'Vanguard High Dividend Yield ETF',r5:10.5,r10:11.8,mkt:'🇺🇸 NYSE'},'VIG':{n:'Vanguard Dividend Appreciation ETF',r5:11.2,r10:12.9,mkt:'🇺🇸 NYSE'},'DGRO':{n:'iShares Core Dividend Growth ETF',r5:11.8,r10:12.6,mkt:'🇺🇸 NYSE'},'IVV':{n:'iShares Core S&P 500 ETF',r5:13.5,r10:15.0,mkt:'🇺🇸 NYSE'},'JEPI':{n:'JPMorgan Equity Premium Income ETF',r5:8.5,r10:null,mkt:'🇺🇸 NYSE'},'JEPQ':{n:'JPMorgan Nasdaq Equity Premium Income',r5:10.2,r10:null,mkt:'🇺🇸 NASDAQ'},'QQQM':{n:'Invesco Nasdaq-100 ETF (mini)',r5:19.0,r10:null,mkt:'🇺🇸 NASDAQ'},'AAPL':{n:'Apple Inc.',r5:22.1,r10:29.0,mkt:'🇺🇸 NASDAQ'},'MSFT':{n:'Microsoft Corporation',r5:24.3,r10:28.5,mkt:'🇺🇸 NASDAQ'},'GOOGL':{n:'Alphabet Inc. (Google)',r5:17.8,r10:21.2,mkt:'🇺🇸 NASDAQ'},'AMZN':{n:'Amazon.com Inc.',r5:13.5,r10:24.8,mkt:'🇺🇸 NASDAQ'},'NVDA':{n:'NVIDIA Corporation',r5:81.2,r10:75.3,mkt:'🇺🇸 NASDAQ'},'META':{n:'Meta Platforms Inc.',r5:27.4,r10:19.8,mkt:'🇺🇸 NASDAQ'},'TSLA':{n:'Tesla Inc.',r5:14.2,r10:38.5,mkt:'🇺🇸 NASDAQ'},'BRK.B':{n:'Berkshire Hathaway Class B',r5:14.8,r10:12.9,mkt:'🇺🇸 NYSE'},'JPM':{n:'JPMorgan Chase & Co.',r5:18.4,r10:14.2,mkt:'🇺🇸 NYSE'},'V':{n:'Visa Inc.',r5:10.8,r10:19.3,mkt:'🇺🇸 NYSE'},'WMT':{n:'Walmart Inc.',r5:18.2,r10:12.4,mkt:'🇺🇸 NYSE'},'RY':{n:'Royal Bank of Canada',r5:10.8,r10:9.2,mkt:'🇨🇦 TSX'},'TD':{n:'Toronto-Dominion Bank',r5:3.1,r10:5.8,mkt:'🇨🇦 TSX'},'BNS':{n:'Bank of Nova Scotia',r5:0.2,r10:3.1,mkt:'🇨🇦 TSX'},'BMO':{n:'Bank of Montreal',r5:5.4,r10:7.2,mkt:'🇨🇦 TSX'},'ENB':{n:'Enbridge Inc.',r5:4.8,r10:6.1,mkt:'🇨🇦 TSX'},'CNQ':{n:'Canadian Natural Resources',r5:14.2,r10:16.8,mkt:'🇨🇦 TSX'},'SU':{n:'Suncor Energy Inc.',r5:9.8,r10:8.4,mkt:'🇨🇦 TSX'},'SHOP':{n:'Shopify Inc.',r5:12.4,r10:null,mkt:'🇨🇦 TSX'}};
+
+function lookupETF(){const raw=document.getElementById('etfInput').value.trim().toUpperCase().replace(/[^A-Z0-9.]/g,'');const st=document.getElementById('etfSt'),badge=document.getElementById('etfBadge');if(!raw){st.className='status err';st.textContent='請輸入股票/ETF代碼';return;}const d=ETF_DATA[raw];if(d){const med=d.r10?((d.r5+d.r10)/2):d.r5,capped=Math.min(med,18);document.getElementById('stockReturn').value=capped;document.getElementById('stockReturnVal').textContent=capped.toFixed(1)+'%';document.getElementById('stockReturnType').value=capped;badge.textContent=`${raw} ${d.mkt} 中位 ${med.toFixed(1)}%`;badge.style.display='inline-block';st.className='status ok';st.textContent=`${d.mkt} ${d.n} — 5年：${d.r5.toFixed(1)}%${d.r10?` | 10年：${d.r10.toFixed(1)}%`:'（僅5年）'} → 中位 ${med.toFixed(1)}% 已套入${med>18?' ⚠ 已上限至18%':''}`;update();}else{st.className='status err';st.textContent=`找不到 "${raw}"。支援：VFV XIU XEQT SCHD SPY QQQ AAPL MSFT NVDA RY TD 等`;badge.style.display='none';}}
+
+function calcStdPTT(p){if(p<=200000)return p*.01;if(p<=2000000)return 2000+(p-200000)*.02;return 2000+1800000*.02+(p-2000000)*.03}
+function calcPTT(price){const std=calcStdPTT(price);let s=0;if(cbFTHB){if(price<=835000)s=8000;else if(price<860000)s=8000*(1-(price-835000)/25000);}if(cbNewBuild){const fe=calcStdPTT(Math.min(price,1100000));if(price<=1100000)s=Math.max(s,fe);else if(price<1150000)s=Math.max(s,fe*(1-(price-1100000)/50000));s=Math.min(s,std);}return Math.max(0,std-s);}
+function calcPTTSaving(price){return Math.max(0,calcStdPTT(price)-calcPTT(price));}
+function calcGST(price){if(!cbGST)return 0;const g=price*0.05;let r=0;if(cbFTHB&&price<=1000000)r=Math.min(g,50000);else if(price<=350000)r=g*0.36;else if(price<450000)r=g*0.36*(1-(price-350000)/100000);return Math.max(0,g-r);}
+function calcGSTSaving(price){if(!cbGST)return 0;const g=price*0.05;let r=0;if(cbFTHB&&price<=1000000)r=Math.min(g,50000);else if(price<=350000)r=g*0.36;else if(price<450000)r=g*0.36*(1-(price-350000)/100000);return Math.max(0,r);}
+function getCMHC(price,dp){if(dp>=20)return 0;const l=price*(1-dp/100);if(dp>=15)return l*.028;if(dp>=10)return l*.031;return l*.040}
+function getPaymentsPerYear(pf){return{monthly:12,semi:24,biweekly:26,weekly:52}[pf]||12}
+function getMortParams(rate,amort,principal,pf){const eff=Math.pow(1+rate/2,2)-1,ppy=getPaymentsPerYear(pf),rp=Math.pow(1+eff,1/ppy)-1,n=amort*ppy,pmt=n>0?principal*(rp*Math.pow(1+rp,n))/(Math.pow(1+rp,n)-1):0;return{pmt,ppy,rp,n,principal};}
+function balanceAfterYears(mp,years){let bal=mp.principal;const pays=Math.min(years*mp.ppy,mp.n);for(let i=0;i<pays;i++){const interest=bal*mp.rp;bal=Math.max(0,bal-(mp.pmt-interest));}return bal;}
+function yearInterestPct(mp,year){if(year*mp.ppy>mp.n)return null;let bal=balanceAfterYears(mp,(year-1));let totInt=0,totPmt=0;const pays=Math.min(mp.ppy,mp.n-(year-1)*mp.ppy);for(let i=0;i<pays;i++){const interest=bal*mp.rp;totInt+=interest;totPmt+=mp.pmt;bal=Math.max(0,bal-(mp.pmt-interest));}return totPmt>0?totInt/totPmt*100:null;}
+
+function updateMortBreakdown(p){const principal=p.price*(1-p.dp/100)+getCMHC(p.price,p.dp),mp=getMortParams(p.rate,p.amort,principal,curPF),totalPmt=mp.pmt*mp.n,totalInt=totalPmt-principal,freqLabel={monthly:'月',semi:'半月',biweekly:'兩週',weekly:'週'}[curPF];const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};set('mb_pmt',`$${Math.round(mp.pmt).toLocaleString('en-CA')} / 每${freqLabel}`);set('mb_n',`${mp.n}次（${p.amort}年 × ${mp.ppy}次/年）`);const y1=yearInterestPct(mp,1);set('mb_yr1',y1!=null?`${y1.toFixed(1)}% 利息，${(100-y1).toFixed(1)}% 本金`:'—');const y5=yearInterestPct(mp,5);set('mb_yr5',y5!=null?`${y5.toFixed(1)}% 利息`:'—（年期不足）');const y10=yearInterestPct(mp,10);set('mb_yr10',y10!=null?`${y10.toFixed(1)}% 利息`:'—（年期不足）');set('mb_tot',`$${Math.round(totalPmt).toLocaleString('en-CA')}`);set('mb_prin',`$${Math.round(principal).toLocaleString('en-CA')}`);set('mb_int',`$${Math.round(totalInt).toLocaleString('en-CA')}（多付 ${((totalInt/principal)*100).toFixed(0)}%）`);const yr1str=y1!=null?y1.toFixed(0):'~60';set('mb_note',`頭幾年供款中約 ${yr1str}% 係利息，${(100-parseFloat(yr1str)).toFixed(0)}% 先係還本金。加拿大按揭採半年複利（semi-annual compounding），借款額大利息比例高；隨本金減少，利息佔比年年下跌。${p.amort}年總利息 $${Math.round(totalInt).toLocaleString('en-CA')}，相當於多付本金 ${((totalInt/principal)*100).toFixed(0)}%。`);}
+
+function toggleCB(n){if(n===1)cbFTHB=document.getElementById('cb_fthb').checked;if(n===2)cbNewBuild=document.getElementById('cb_newbuild').checked;if(n===3)cbGST=document.getElementById('cb_gst').checked;[1,2,3].forEach(i=>{const r=document.getElementById('cbRow'+i);const c=document.getElementById(['cb_fthb','cb_newbuild','cb_gst'][i-1]);if(c.checked)r.classList.add('active');else r.classList.remove('active');});updateCBSavings();update();}
+function updateCBSavings(){const price=parseFloat(document.getElementById('propPrice').value)||1100000;const s1=calcPTTSaving(price);const e1=document.getElementById('cb1saving');if(cbFTHB){e1.textContent=s1>0?`✓ 可慳 PTT $${Math.round(s1).toLocaleString('en-CA')}`:'✗ 超過 $860,000，無豁免';}else e1.textContent='';const e2=document.getElementById('cb2saving');if(cbNewBuild){if(price<=1100000)e2.textContent=`✓ 全免 PTT $${Math.round(calcStdPTT(price)).toLocaleString('en-CA')}`;else if(price<1150000)e2.textContent='✓ 部分豁免適用';else e2.textContent='✗ 超過 $1,150,000，無豁免';}else e2.textContent='';const e3=document.getElementById('cb3saving');if(cbGST){const g=price*0.05,sv=calcGSTSaving(price);e3.textContent=sv>0?`✓ 退/豁免 GST $${Math.round(sv).toLocaleString('en-CA')}；實際繳 $${Math.round(g-sv).toLocaleString('en-CA')}`:`需繳 5% GST $${Math.round(g).toLocaleString('en-CA')}（無退稅）`;}else e3.textContent='';const total=calcPTTSaving(price)+calcGSTSaving(price);const banner=document.getElementById('taxSavingBanner');if(total>0&&(cbFTHB||cbNewBuild||cbGST)){banner.style.display='block';banner.innerHTML=`<strong>★ 估計總稅務節省：$${Math.round(total).toLocaleString('en-CA')}</strong>`;}else banner.style.display='none';}
+
+function getP(){const price=parseFloat(document.getElementById('propPrice').value)||1100000,dp=parseFloat(document.getElementById('downPct').value)||20,ptRaw=parseFloat(document.getElementById('propTax').value)||0,extra=parseFloat(document.getElementById('extraInvest').value)||0;return{price,dp,amort:parseInt(document.getElementById('amort').value)||25,rate:parseFloat(document.getElementById('mortRate').value)/100||0.0375,pg:parseFloat(document.getElementById('propGrowth').value)/100||0.04,rent:parseFloat(document.getElementById('rent').value)||2600,sr:parseFloat(document.getElementById('stockReturn').value)/100||0.11,rg:parseFloat(document.getElementById('rentGrowth').value)/100||0.03,propTax:ptRaw>0?ptRaw:price*0.005,strata:(parseFloat(document.getElementById('strata').value)||0)*12,carDebt:(parseFloat(document.getElementById('carDebt').value)||0)*12,ccDebt:(parseFloat(document.getElementById('ccDebt').value)||0)*12,extra};}
+function calcBuy(p,years){const down=p.price*p.dp/100,ptt=calcPTT(p.price),gst=calcGST(p.price),cmhc=getCMHC(p.price,p.dp),principal=p.price-down+cmhc,mp=getMortParams(p.rate,p.amort,principal,curPF),bal=balanceAfterYears(mp,years);let totPT=0,totMt=0,totStr=0;for(let y=0;y<years;y++){totPT+=p.propTax;totMt+=p.price*Math.pow(1+p.pg,y)*.01;totStr+=p.strata;}return{netWorth:p.price*Math.pow(1+p.pg,years)-bal,pv:p.price*Math.pow(1+p.pg,years),bal,upfront:down+ptt+gst+4200,pmt:mp.pmt,ppy:mp.ppy,ptt,gst,cmhc,totPT,totMt,totStr};}
+function calcRent(p,years){const down=p.price*p.dp/100,ptt=calcPTT(p.price),gst=calcGST(p.price),init=down+ptt+gst+4200,principal=p.price-down+getCMHC(p.price,p.dp),mp=getMortParams(p.rate,p.amort,principal,curPF),mortMonthly=mp.pmt*(mp.ppy/12),msr=Math.pow(1+p.sr,1/12)-1,dM=(p.carDebt+p.ccDebt)/12;let portfolio=init,totR=0,totS=0,curR=p.rent;for(let y=0;y<years;y++){const propOpexM=(p.propTax+p.price*Math.pow(1+p.pg,y)*0.01)/12+p.strata/12,ms=Math.max(0,mortMonthly+propOpexM-curR-dM)+p.extra;for(let m=0;m<12;m++) portfolio=portfolio*(1+msr)+ms;totR+=curR*12;totS+=ms*12;curR*=(1+p.rg);}return{netWorth:portfolio-totR,portfolio,init,totR,totS};}
+function calcInvest(p,years){const down=p.price*p.dp/100,ptt=calcPTT(p.price),gst=calcGST(p.price),init=down+ptt+gst+4200,msr=Math.pow(1+p.sr,1/12)-1,dM=(p.carDebt+p.ccDebt)/12,ms=Math.max(0,p.extra-dM);let portfolio=init,totS=0;for(let y=0;y<years;y++){for(let m=0;m<12;m++) portfolio=portfolio*(1+msr)+ms;totS+=ms*12;}return{netWorth:portfolio,portfolio,init,totS,ms,dM};}
+function buildSeries(p,max){const la=[],a=[],b=[],c=[];for(let y=1;y<=max;y++){la.push(y+'年');a.push(Math.round(calcBuy(p,y).netWorth));b.push(Math.round(calcRent(p,y).netWorth));c.push(Math.round(calcInvest(p,y).netWorth));}return{labels:la,a,b,c};}
+function fmtM(n){return'$'+Math.round(n).toLocaleString('en-CA')}
+
+function update(){const p=getP(),buy=calcBuy(p,curY),rnt=calcRent(p,curY),inv=calcInvest(p,curY);
+  document.getElementById('buyW').textContent=fmtM(buy.netWorth);document.getElementById('rntW').textContent=fmtM(rnt.netWorth);document.getElementById('invW').textContent=fmtM(Math.max(0,inv.netWorth));
+  const pfL={monthly:'月供',semi:'半月供',biweekly:'雙週供',weekly:'週供'}[curPF],dM=(p.carDebt+p.ccDebt)/12;
+  const cmhcL=buy.cmhc>0?`<div class="dr"><span class="k">CMHC保費</span><span class="v">${fmtM(buy.cmhc)}</span></div>`:'';
+  const gstL=buy.gst>0?`<div class="dr"><span class="k">GST 5%（新樓）</span><span class="v">${fmtM(buy.gst)}</span></div>`:'';
+  const strL=buy.totStr>0?`<div class="dr"><span class="k">管理費（累計）</span><span class="v">${fmtM(buy.totStr)}</span></div>`:'';
+  const taxSave=calcPTTSaving(p.price)+calcGSTSaving(p.price);
+  const saveL=taxSave>0?`<div class="dr"><span class="k" style="color:#1D9E75">稅務節省</span><span class="v" style="color:#1D9E75">−${fmtM(taxSave)}</span></div>`:'';
+  const debtLA=dM>0?`<div class="dr"><span class="k">車貸+信用卡月供</span><span class="v">${fmtM(dM)}/月</span></div>`:'';
+  const mortMonthlyA=buy.pmt*(buy.ppy/12),propTaxMonthlyA=p.propTax/12,maintMonthlyA=p.price*0.01/12,strataMonthlyA=p.strata/12,totalMonthlyA=mortMonthlyA+propTaxMonthlyA+maintMonthlyA+strataMonthlyA+dM;
+  document.getElementById('buyDet').innerHTML=`<div class="dr"><span class="k">物業估值</span><span class="v">${fmtM(buy.pv)}</span></div><div class="dr"><span class="k">剩餘按揭</span><span class="v">−${fmtM(buy.bal)}</span></div><div class="dr"><span class="k">首期+入市費用</span><span class="v">${fmtM(buy.upfront)}</span></div><div class="dr"><span class="k">PTT轉讓稅</span><span class="v">${fmtM(buy.ptt)}</span></div>${gstL}${cmhcL}${saveL}<div class="dr"><span class="k">${pfL}</span><span class="v">${fmtM(buy.pmt)}/${pfL.replace('供','')}</span></div><div class="dr"><span class="k">物業稅+維修（累計）</span><span class="v">${fmtM(buy.totPT+buy.totMt)}</span></div>${strL}${debtLA}<div style="margin-top:8px;padding-top:8px;border-top:2px solid #1D9E75"><div class="dr" style="background:#f0fdf4;border-radius:6px;padding:6px 8px;margin-top:4px"><span class="k" style="color:#166534;font-weight:700">💰 每月估計開支</span><span class="v" style="color:#166534;font-size:15px;font-weight:800">${fmtM(totalMonthlyA)}/月</span></div><div class="dr" style="padding:2px 8px"><span class="k" style="color:#888;font-size:12px">按揭 ${fmtM(Math.round(mortMonthlyA))} ＋ 物業稅 ${fmtM(Math.round(propTaxMonthlyA))} ＋ 維修 ${fmtM(Math.round(maintMonthlyA))}${p.strata>0?' ＋ 管理費 '+fmtM(Math.round(strataMonthlyA)):''}${dM>0?' ＋ 車貸/卡數 '+fmtM(Math.round(dM)):''}</span></div></div>`;
+  const autoMs=Math.max(0,rnt.totS/curY/12-p.extra),extLB=p.extra>0?`<div class="dr"><span class="k">每月額外投入</span><span class="v">+${fmtM(p.extra)}/月</span></div>`:'',debtLB=dM>0?`<div class="dr"><span class="k">車貸+信用卡月供</span><span class="v">−${fmtM(dM)}/月</span></div>`:'';
+  const totalMonthlyB=p.rent+dM+p.extra;
+  document.getElementById('rntDet').innerHTML=`<div class="dr"><span class="k">初始投入</span><span class="v">${fmtM(rnt.init)}</span></div><div class="dr"><span class="k">每月投入（節省部分）</span><span class="v">~${fmtM(autoMs)}/月</span></div>${extLB}${debtLB}<div class="dr"><span class="k">投資組合市值</span><span class="v">${fmtM(rnt.portfolio)}</span></div><div class="dr"><span class="k">累計租金支出</span><span class="v" style="color:#b91c1c">−${fmtM(rnt.totR)}</span></div><div class="dr"><span class="k">淨財富</span><span class="v">${fmtM(rnt.netWorth)}</span></div><div class="dr"><span class="k">年回報</span><span class="v">${(p.sr*100).toFixed(1)}%</span></div><div style="margin-top:8px;padding-top:8px;border-top:2px solid #BA7517"><div class="dr" style="background:#fffbeb;border-radius:6px;padding:6px 8px;margin-top:4px"><span class="k" style="color:#92400e;font-weight:700">💰 每月估計開支</span><span class="v" style="color:#92400e;font-size:15px;font-weight:800">${fmtM(totalMonthlyB)}/月</span></div><div class="dr" style="padding:2px 8px"><span class="k" style="color:#888;font-size:12px">租金 ${fmtM(p.rent)}${dM>0?' ＋ 車貸/卡數 '+fmtM(Math.round(dM)):''}${p.extra>0?' ＋ 額外投入 '+fmtM(p.extra):''}</span></div></div>`;
+  const extLC=inv.ms>0?`<div class="dr"><span class="k">每月額外投入</span><span class="v">+${fmtM(inv.ms)}/月</span></div>`:`<div class="dr"><span class="k">每月額外投入</span><span class="v">$0/月</span></div>`,debtLC=dM>0?`<div class="dr"><span class="k">車貸+信用卡月供</span><span class="v">−${fmtM(dM)}/月</span></div>`:'';
+  const totalMonthlyC=dM+p.extra;
+  document.getElementById('invDet').innerHTML=`<div class="dr"><span class="k">初始投入</span><span class="v">${fmtM(inv.init)}</span></div>${extLC}${debtLC}<div class="dr"><span class="k">租金支出</span><span class="v">$0（假設免租）</span></div><div class="dr"><span class="k">投資組合市值</span><span class="v">${fmtM(Math.max(0,inv.portfolio))}</span></div><div class="dr"><span class="k">年回報</span><span class="v">${(p.sr*100).toFixed(1)}%</span></div><div style="margin-top:8px;padding-top:8px;border-top:2px solid #E24B4A"><div class="dr" style="background:#fff1f2;border-radius:6px;padding:6px 8px;margin-top:4px"><span class="k" style="color:#9f1239;font-weight:700">💰 每月估計開支</span><span class="v" style="color:#9f1239;font-size:15px;font-weight:800">${fmtM(totalMonthlyC)}/月</span></div><div class="dr" style="padding:2px 8px"><span class="k" style="color:#888;font-size:12px">${totalMonthlyC>0?(dM>0?'車貸/卡數 '+fmtM(Math.round(dM)):'')+((dM>0&&p.extra>0)?' ＋ ':'')+( p.extra>0?'額外投入 '+fmtM(p.extra):''):'免租假設，僅計債務'}</span></div></div>`;
+  const invNW=Math.max(0,inv.netWorth),scores=[{v:buy.netWorth,t:'方案A 買樓',banCls:'ban-a',biCls:'bi-a',cardId:'cardA'},{v:rnt.netWorth,t:'方案B 租樓+投資',banCls:'ban-b',biCls:'bi-b',cardId:'cardB'},{v:invNW,t:'方案C 純投資',banCls:'ban-c',biCls:'bi-c',cardId:'cardC'}];
+  scores.sort((a,b2)=>b2.v-a.v);const top=scores[0];
+  ['cardA','cardB','cardC'].forEach(id=>document.getElementById(id).classList.remove('winner'));document.getElementById(top.cardId).classList.add('winner');
+  const banner=document.getElementById('winnerBanner');banner.className='banner '+top.banCls;document.getElementById('bicon').className='bicon '+top.biCls;document.getElementById('bicon').textContent='★';
+  document.getElementById('winnerText').innerHTML=`<strong>${curY}年後，${top.t}淨財富最高</strong> — ${fmtM(top.v)}（比第二名多 ${fmtM(top.v-scores[1].v)}）`;
+  const fn=document.getElementById('flipNote');if(curY<=1){fn.textContent='⚠ BC Flipping Tax：持有不足1年出售，純利20%稅。';fn.style.display='block';}else if(curY<=2){fn.textContent='⚠ BC Flipping Tax：持有1–2年仍有遞減稅率。';fn.style.display='block';}else fn.style.display='none';
+  const s=buildSeries(p,30);
+  if(wChart){wChart.data.labels=s.labels;wChart.data.datasets[0].data=s.a;wChart.data.datasets[1].data=s.b;wChart.data.datasets[2].data=s.c;wChart.update();}
+  else{wChart=new Chart(document.getElementById('wChart'),{type:'line',data:{labels:s.labels,datasets:[{label:'方案A 買樓',data:s.a,borderColor:'#1D9E75',backgroundColor:'rgba(29,158,117,0.08)',borderWidth:2.5,pointRadius:2,fill:true,tension:0.35},{label:'方案B 租樓+投資',data:s.b,borderColor:'#BA7517',backgroundColor:'rgba(186,117,23,0.08)',borderWidth:2.5,pointRadius:2,fill:true,tension:0.35},{label:'方案C 純投資',data:s.c,borderColor:'#E24B4A',backgroundColor:'rgba(226,75,74,0.08)',borderWidth:2.5,pointRadius:2,fill:true,tension:0.35}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+c.dataset.label+': $'+Math.round(c.parsed.y).toLocaleString('en-CA')}}},scales:{y:{ticks:{callback:v=>'$'+(Math.abs(v)>=1000000?(v/1000000).toFixed(1)+'M':(v/1000).toFixed(0)+'K'),font:{size:11}},grid:{color:'rgba(0,0,0,0.06)'}},x:{ticks:{font:{size:11},maxTicksLimit:10},grid:{display:false}}}}});}
+  updatePFNote();updateMortBreakdown(p);}
+
+function setYear(y){curY=y;document.querySelectorAll('.yr-btn').forEach(b=>b.className='yr-btn');document.getElementById('tab'+y).className='yr-btn on';update();}
+function buildTermButtons(){const key=isHR?'highRatio':'conventional',terms=Object.keys(RATES[rateType][key]).sort((a,b)=>parseInt(a)-parseInt(b)),c=document.getElementById('termBtns');c.innerHTML='';if(!terms.includes(curTerm))curTerm=terms.includes('5')?'5':terms[0];terms.forEach(t=>{const btn=document.createElement('button');btn.className='term-btn'+(t===curTerm?' on':'');btn.textContent=t+'年';btn.onclick=()=>{curTerm=t;buildTermButtons();refreshBankMenu();};c.appendChild(btn);});document.getElementById('termNote').textContent=(TERM_NOTES[rateType]||{})[curTerm]||'';}
+function refreshBankMenu(){const dp=parseFloat(document.getElementById('downPct').value)||20,price=parseFloat(document.getElementById('propPrice').value)||1100000;isHR=dp<20&&price<=1500000;document.getElementById('hrn').style.display=isHR?'block':'none';const list=(RATES[rateType][isHR?'highRatio':'conventional'][curTerm])||[];document.getElementById('bankLabel').textContent=`選擇銀行/機構（${isHR?'High Ratio ':''} ${curTerm}年${rateType==='fixed'?'固定':'浮動'}）`;const sel=document.getElementById('bankSel'),cur=parseFloat(sel.value);sel.innerHTML='<option value="">— 選擇 —</option>';if(!list.length){const o=document.createElement('option');o.value='';o.textContent='此年期暫無報價';sel.appendChild(o);}else list.forEach(r=>{const o=document.createElement('option');o.value=r.r;o.textContent=r.l+' — '+r.r.toFixed(2)+'%';sel.appendChild(o);});if(!isNaN(cur))sel.value=cur;updateCBSavings();}
+function setRateType(t){rateType=t;document.getElementById('fixedBtn').className='rt-btn'+(t==='fixed'?' on-fixed':'');document.getElementById('varBtn').className='rt-btn'+(t==='variable'?' on-variable':'');document.getElementById('rateBox').className='rate-box'+(t==='fixed'?'':' var');document.getElementById('termLabel').textContent=`按揭年期（${t==='fixed'?'固定':'浮動'}利率）`;buildTermButtons();refreshBankMenu();}
+function applyBankRate(){const v=parseFloat(document.getElementById('bankSel').value);if(isNaN(v))return;document.getElementById('mortRate').value=v;document.getElementById('mortRateVal').textContent=v.toFixed(2)+'%';document.getElementById('mortRateType').value=v;update();}
+function setPF(pf){curPF=pf;['monthly','semi','biweekly','weekly'].forEach(p2=>document.getElementById('pf_'+p2).className='pf-btn'+(p2===pf?' on':''));update();}
+function updatePFNote(){const note=document.getElementById('pfNote'),p=getP(),prin=p.price*(1-p.dp/100)+getCMHC(p.price,p.dp),mp=getMortParams(p.rate,p.amort,prin,curPF),base=getMortParams(p.rate,p.amort,prin,'monthly'),diff=Math.round((base.pmt*base.n)-(mp.pmt*mp.n)),freq={monthly:'每月',semi:'每半月',biweekly:'每兩週',weekly:'每週'}[curPF];if(curPF==='monthly'){note.className='pf-note neutral';note.textContent=`${freq}供款：$${Math.round(mp.pmt).toLocaleString('en-CA')}。以此為基準。`;}else{note.className='pf-note save';note.textContent=`${freq}供款：$${Math.round(mp.pmt).toLocaleString('en-CA')}。相比每月，${p.amort}年間慳息 $${diff.toLocaleString('en-CA')}。`;}note.style.display='block';}
+function toggleFlip(){document.getElementById('flipTooltip').classList.toggle('show');}
+document.addEventListener('click',e=>{const tt=document.getElementById('flipTooltip'),badge=document.getElementById('flipBadge');if(!badge.contains(e.target)&&!tt.contains(e.target))tt.classList.remove('show');});
+function syncPropPrice(){const v=parseFloat(document.getElementById('propPrice').value);document.getElementById('propPriceVal').textContent='$'+Math.round(v).toLocaleString('en-CA');const t=document.getElementById('propPriceType');if(document.activeElement!==t)t.value=v;refreshBankMenu();update();}
+function syncPropPriceType(){const r=parseFloat(document.getElementById('propPriceType').value);if(!isNaN(r)){const c=Math.min(Math.max(r,400000),2500000);document.getElementById('propPrice').value=c;document.getElementById('propPriceVal').textContent='$'+Math.round(c).toLocaleString('en-CA');}refreshBankMenu();update();}
+function syncDown(){const v=parseFloat(document.getElementById('downPct').value);document.getElementById('downPctVal').textContent=v+'%';const t=document.getElementById('downPctType');if(document.activeElement!==t)t.value=v;checkIns();refreshBankMenu();update();}
+function syncDownType(){const r=parseFloat(document.getElementById('downPctType').value);if(!isNaN(r)){const c=Math.min(Math.max(r,5),40);document.getElementById('downPct').value=c;document.getElementById('downPctVal').textContent=c+'%';}checkIns();refreshBankMenu();update();}
+function syncAmort(){const v=parseInt(document.getElementById('amort').value);document.getElementById('amortVal').textContent=v+'年';const t=document.getElementById('amortType');if(document.activeElement!==t)t.value=v;update();}
+function syncAmortType(){const r=parseInt(document.getElementById('amortType').value);if(!isNaN(r)){const c=Math.min(Math.max(r,15),30);document.getElementById('amort').value=c;document.getElementById('amortVal').textContent=c+'年';}update();}
+function syncPG(){const v=parseFloat(document.getElementById('propGrowth').value);document.getElementById('propGrowthVal').textContent=v.toFixed(1)+'%';const t=document.getElementById('propGrowthType');if(document.activeElement!==t)t.value=v;update();}
+function syncPGType(){const r=parseFloat(document.getElementById('propGrowthType').value);if(!isNaN(r)){const c=Math.min(Math.max(r,-10),20);document.getElementById('propGrowth').value=c;document.getElementById('propGrowthVal').textContent=c.toFixed(1)+'%';}update();}
+function syncRent(){const v=parseFloat(document.getElementById('rent').value);document.getElementById('rentVal').textContent='$'+Math.round(v).toLocaleString('en-CA');const t=document.getElementById('rentType');if(document.activeElement!==t)t.value=v;update();}
+function syncRentType(){const r=parseFloat(document.getElementById('rentType').value);if(!isNaN(r)){const c=Math.min(Math.max(r,500),10000);document.getElementById('rent').value=c;document.getElementById('rentVal').textContent='$'+Math.round(c).toLocaleString('en-CA');}update();}
+function syncSR(){const v=parseFloat(document.getElementById('stockReturn').value);document.getElementById('stockReturnVal').textContent=v.toFixed(1)+'%';const t=document.getElementById('stockReturnType');if(document.activeElement!==t)t.value=v;update();}
+function syncSRType(){const r=parseFloat(document.getElementById('stockReturnType').value);if(!isNaN(r)){const c=Math.min(Math.max(r,1),25);document.getElementById('stockReturn').value=c;document.getElementById('stockReturnVal').textContent=c.toFixed(1)+'%';}update();}
+function syncRG(){const v=parseFloat(document.getElementById('rentGrowth').value);document.getElementById('rentGrowthVal').textContent=v.toFixed(1)+'%';const t=document.getElementById('rentGrowthType');if(document.activeElement!==t)t.value=v;update();}
+function syncRGType(){const r=parseFloat(document.getElementById('rentGrowthType').value);if(!isNaN(r)){const c=Math.min(Math.max(r,0),15);document.getElementById('rentGrowth').value=c;document.getElementById('rentGrowthVal').textContent=c.toFixed(1)+'%';}update();}
+function syncInfl(){const v=parseFloat(document.getElementById('inflation').value);document.getElementById('inflationVal').textContent=v.toFixed(1)+'%';const t=document.getElementById('inflationType');if(document.activeElement!==t)t.value=v;update();}
+function syncInflType(){const r=parseFloat(document.getElementById('inflationType').value);if(!isNaN(r)){const c=Math.min(Math.max(r,0),10);document.getElementById('inflation').value=c;document.getElementById('inflationVal').textContent=c.toFixed(1)+'%';}update();}
+function syncPT(){const v=parseFloat(document.getElementById('propTax').value);document.getElementById('propTaxVal').textContent=v==0?'自動按0.5%':'$'+Math.round(v).toLocaleString('en-CA');const t=document.getElementById('propTaxType');if(document.activeElement!==t)t.value=v==0?'':v;update();}
+function syncPTType(){const r=parseFloat(document.getElementById('propTaxType').value)||0;document.getElementById('propTax').value=Math.min(r,20000);document.getElementById('propTaxVal').textContent=r==0?'自動按0.5%':'$'+Math.round(r).toLocaleString('en-CA');update();}
+function syncStr(){const v=parseFloat(document.getElementById('strata').value);document.getElementById('strataVal').textContent=v==0?'不適用':'$'+Math.round(v).toLocaleString('en-CA')+'/月';const t=document.getElementById('strataType');if(document.activeElement!==t)t.value=v==0?'':v;update();}
+function syncStrType(){const r=parseFloat(document.getElementById('strataType').value)||0;document.getElementById('strata').value=Math.min(r,2000);document.getElementById('strataVal').textContent=r==0?'不適用':'$'+Math.round(r).toLocaleString('en-CA')+'/月';update();}
+function syncCD(){const v=parseFloat(document.getElementById('carDebt').value);document.getElementById('carDebtVal').textContent=v==0?'無':'$'+Math.round(v).toLocaleString('en-CA')+'/月';const t=document.getElementById('carDebtType');if(document.activeElement!==t)t.value=v==0?'':v;update();}
+function syncCDType(){const r=parseFloat(document.getElementById('carDebtType').value)||0;document.getElementById('carDebt').value=Math.min(r,3000);document.getElementById('carDebtVal').textContent=r==0?'無':'$'+Math.round(r).toLocaleString('en-CA')+'/月';update();}
+function syncCC(){const v=parseFloat(document.getElementById('ccDebt').value);document.getElementById('ccDebtVal').textContent=v==0?'無':'$'+Math.round(v).toLocaleString('en-CA')+'/月';const t=document.getElementById('ccDebtType');if(document.activeElement!==t)t.value=v==0?'':v;update();}
+function syncCCType(){const r=parseFloat(document.getElementById('ccDebtType').value)||0;document.getElementById('ccDebt').value=Math.min(r,3000);document.getElementById('ccDebtVal').textContent=r==0?'無':'$'+Math.round(r).toLocaleString('en-CA')+'/月';update();}
+function syncExtra(){const v=parseFloat(document.getElementById('extraInvest').value);document.getElementById('extraVal').textContent='$'+Math.round(v).toLocaleString('en-CA')+'/月';const t=document.getElementById('extraType');if(document.activeElement!==t)t.value=v==0?'':v;update();}
+function syncExtraType(){const r=parseFloat(document.getElementById('extraType').value)||0;document.getElementById('extraInvest').value=Math.min(r,5000);document.getElementById('extraVal').textContent='$'+Math.round(r).toLocaleString('en-CA')+'/月';update();}
+function syncMortSlider(){const v=parseFloat(document.getElementById('mortRate').value);document.getElementById('mortRateVal').textContent=v.toFixed(2)+'%';const t=document.getElementById('mortRateType');if(document.activeElement!==t)t.value=v;update();}
+function syncMortType(){const r=parseFloat(document.getElementById('mortRateType').value);if(!isNaN(r)){const c=Math.min(Math.max(r,1),12);document.getElementById('mortRate').value=c;document.getElementById('mortRateVal').textContent=c.toFixed(2)+'%';}update();}
+function checkIns(){document.getElementById('insNote').style.display=(parseFloat(document.getElementById('downPct').value)||20)<20?'block':'none';}
+document.getElementById('etfInput').addEventListener('keydown',e=>{if(e.key==='Enter')lookupETF();});
+setRateType('fixed');setPF('biweekly');checkIns();update();
+// Dynamic current month/year label
+(function(){
+  const months=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  const now=new Date();
+  const label=now.getFullYear()+'年'+months[now.getMonth()];
+  document.querySelectorAll('.cur-ym').forEach(el=>el.textContent=label);
+})();
+
+</script>
+</body>
+</html>
